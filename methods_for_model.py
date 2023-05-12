@@ -79,7 +79,7 @@ def format_float(value, decimals=3, factor=1):
     Value: Flota you want to format.
     '''
     if type(value) == float and check_positive_int(decimals) and type(factor) == int:
-        return float("%.{}f".format(decimals) % value)
+        return float("%.{}f".format(decimals) % (value * factor))
     else:
         raise ("Values do not fulfil requirements: \n\
                type(value) == int \n\

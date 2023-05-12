@@ -28,20 +28,20 @@ class Model_Hypgeo(Subject):
         '''
         Sets self.deck_size to integer, updates self.unassigned_cards.
         '''
-        try:
+        if check_positive_int(integer):
             self.deck_size = integer
             self.update_unassigned_cards()
-        except:
-             self.notify("invalid_deck_size")
+        else:
+             self.notify("invalid deck size")
         
     def set_sample_size(self, integer):
         '''
         Sets self.sample_size to integer.
         '''
-        try:
+        if check_positive_int(integer) and integer <= self.deck_size:
             self.sample_size = integer
-        except:
-            self.notify("invalid_sample_size")
+        else:
+            self.notify("invalid sample size")
 
     def add_defined_group(self, card_count=0, min_in_sample=0, max_in_sample=0):
         '''
@@ -49,32 +49,42 @@ class Model_Hypgeo(Subject):
         self.unassigned_cards >= card_count >= max_in_sample >= min_in_sample
         Updates self.unassigned_cards. 
         '''
-        try:
+        if check_positive_int(card_count) and check_positive_int(min_in_sample) and check_positive_int(max_in_sample) \
+                                          and self.unassigned_cards >= card_count >= max_in_sample >= min_in_sample:
             self.defined_groups[self.group_key] = [card_count, min_in_sample, max_in_sample]
             self.group_key += 1
             self.update_unassigned_cards()
-        except:
-            self.notify("invalid_group")
+        else:
+            self.notify("invalid_pool")
         
     def set_defined_group_size(self, key, card_count):
         try:
-            self.defined_groups[key][0] = card_count
-            self.update_unassigned_cards()
+            if check_positive_int(card_count) and card_count <= self.unassigned_cards and card_count >= (self.defined_groups[key][1] and self.defined_groups[key][2]):
+                self.defined_groups[key][0] = card_count
+                self.update_unassigned_cards()
+            else:
+                self.notify("invalid group size", group_key=key)
         except:
-            self.notify("invalid_group_size")
+            pass
 
     def set_defined_group_min(self, key, min_in_sample):
         try:
-            self.defined_groups[key][1] = min_in_sample
+            if check_positive_int(min_in_sample) and min_in_sample <= self.defined_groups[key][2]:
+                self.defined_groups[key][1] = min_in_sample
+            else:
+                self.notify("invalid group min", group_key=key)
         except:
-            self.notify("invalid_group_min")
+            pass
 
     def set_defined_group_max(self, key, max_in_sample):
         try:
-            self.defined_groups[key][2] = max_in_sample
+            if check_positive_int(max_in_sample) and max_in_sample >= self.defined_groups[key][1] and max_in_sample <= self.defined_groups[key][0]:
+                self.defined_groups[key][2] = max_in_sample
+            else:
+                self.notify("invalid group max", group_key=key)
         except:
-            self.notify("invalid_group_max")
-
+            pass
+            
     def del_defined_group(self, key):
         '''
         Deletes a group from self.defined_groups. index = integer for accessing the group.
@@ -83,7 +93,7 @@ class Model_Hypgeo(Subject):
             self.defined_groups.pop(key)
             self.update_unassigned_cards()
         except:
-            self.notify("invalid_removal_index")
+            pass
 
     def update_unassigned_cards(self):
         '''
@@ -138,7 +148,6 @@ class Model_Hypgeo(Subject):
         hypgeo_cdf = dividend / divisor         # We get the hypgeo. cdf by dividing (successful samples) / (possible samples).
         self.result = hypgeo_cdf                # Set self.result.
         self.notify("end calculte")             # Notify the Observers that the caluclation has finished.
-        print(self.result)
     
     # Get methods.
     def get_deck_size(self):
@@ -152,6 +161,15 @@ class Model_Hypgeo(Subject):
     
     def get_unassigned_cards(self):
         return self.unassigned_cards
+    
+    def get_group_size(self, key):
+        return self.defined_groups[key][0]
+    
+    def get_group_min(self, key):
+        return self.defined_groups[key][1]
+    
+    def get_group_max(self, key):
+        return self.defined_groups[key][2]
 
     def get_result(self):
         return self.result

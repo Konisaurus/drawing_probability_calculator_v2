@@ -145,4 +145,49 @@ class View(tk.Tk, Observer):
         self.winfo_containing(x, y).focus()
 
     def update(self, update_event, **kwargs):
-        pass
+        if update_event == "start calculate":
+            pass
+
+        if update_event == "end calculte":
+            self.popup(("The probability of this configuration is: " + str(format_float(self.model.get_result(), factor=100)) + "%"))
+        
+        if update_event == "invalid deck size":
+            self.ent_deck_size.delete(0, "end")
+            self.ent_deck_size.insert(0, self.model.get_deck_size())
+
+        if update_event == "invalid sample size":
+            self.ent_sample_size.delete(0, "end")
+            self.ent_sample_size.insert(0, self.model.get_sample_size())
+
+        if update_event == "invalid group":
+            pass
+
+        if update_event == "invalid group size":
+            group_key = kwargs["group_key"]
+            self.groups[group_key][2].delete(0, "end")
+            self.groups[group_key][2].insert(0, self.model.get_group_size(group_key))
+
+        if update_event == "invalid group min":
+            group_key = kwargs["group_key"]
+            self.groups[group_key][3].delete(0, "end")
+            self.groups[group_key][3].insert(0, self.model.get_group_min(group_key))
+
+        if update_event == "invalid group max":
+            group_key = kwargs["group_key"]
+            self.groups[group_key][4].delete(0, "end")
+            self.groups[group_key][4].insert(0, self.model.get_group_max(group_key))
+
+    def popup(self, text):
+        popup = tk.Toplevel()                                        # Create a popup window.
+        popup.geometry("390x70")                                     # Set size.
+        popup.resizable(False, False)                                # Lock size.
+        x = self.winfo_x()
+        y = self.winfo_y()
+        popup.geometry("+%d+%d" %(x+75,y+225))                      # Center the popup in front of the main window.
+        popup.grab_set()                                            # "Freezes" the main window until the popup is closed.
+
+        # Label
+        lbl_popup = tk.Label(master=popup, text=text, height=1, font=("Helvetica", "11"), anchor="center")
+        lbl_popup.pack(padx=5, pady=20)
+
+        popup.mainloop()
