@@ -12,7 +12,7 @@ class Observer():
     Abstract class Observer from the "Observer Pattern".
     The system which observes the Subject implements this class further.
     '''
-    def update(self, event_code):
+    def update(self, event_code, **kwargs):
         '''
         Update when something in the Subject happens.
         event_code specifies which part of the Observer should update.

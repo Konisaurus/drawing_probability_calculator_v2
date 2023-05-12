@@ -52,12 +52,24 @@ def binomial_coefficient(n, k):
 
 def check_positive_int(value):
     '''
-    returns True if a value is an integer and positive, else returns False.
+    Returns True if a value is an integer and positive, else returns False.
     '''
     if type(value) == int and value >= 0:
         return True
     else:
         return False
+    
+def convert_dict_to_list(dictionary):
+    '''
+    Converts a dicitionary to a list. Basically, it removes the keys.
+    '''
+    new_list = []
+    try:
+        for key in dictionary:
+            new_list.append(dictionary[key])
+        return new_list
+    except:
+        raise (TypeError, "convert_dict_to_list needs a dict as an argument.")
 
 def format_float(value, decimals=3, factor=1):
     '''
