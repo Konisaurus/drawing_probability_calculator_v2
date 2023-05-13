@@ -1,7 +1,6 @@
 import tkinter as tk
 from widgets_for_gui import *
 from observer_subject import Observer
-from copy import deepcopy
 from model_hypgeo import *
 
 
@@ -73,8 +72,8 @@ class View(tk.Tk, Observer):
         # Bottom widgets: Create, configure and arrange with grid
         self.lbl_group_name = tk.Label(master=self.main_frm_bottom.get_frm_container(), text="Group Name\n(optional)", font=("Helvetica", self.text_size, "bold"), anchor="center", width=self.label_width)
         self.lbl_group_success_deck = tk.Label(master=self.main_frm_bottom.get_frm_container(), text="Success in\nDeck", font=("Helvetica", self.text_size, "bold"), anchor="center", width=self.label_width)
-        self.lbl_group_min_success_sample = tk.Label(master=self.main_frm_bottom.get_frm_container(), text="Min Success\nin Sample", font=("Helvetica", self.text_size, "bold"), anchor="center", width=self.label_width)
-        self.lbl_group_max_success_sample = tk.Label(master=self.main_frm_bottom.get_frm_container(), text="Max Success\nin Sample", font=("Helvetica", self.text_size, "bold"), anchor="center", width=self.label_width)
+        self.lbl_group_min_success_sample = tk.Label(master=self.main_frm_bottom.get_frm_container(), text="Min. Success\nin Sample", font=("Helvetica", self.text_size, "bold"), anchor="center", width=self.label_width)
+        self.lbl_group_max_success_sample = tk.Label(master=self.main_frm_bottom.get_frm_container(), text="Max. Success\nin Sample", font=("Helvetica", self.text_size, "bold"), anchor="center", width=self.label_width)
         self.lbl_group_delete = tk.Label(master=self.main_frm_bottom.get_frm_container(), text="Delete\nGroup", font=("Helvetica", self.text_size, "bold"), anchor="center", width=self.label_width)
 
         self.btn_add_group = tk.Button(master=self.main_frm_bottom.get_frm_container(), text="ADD GROUP", font=("Helvetica", self.text_size), anchor="center", command=lambda: [self.add_group_view(), self.controller.on_add_group()])
@@ -91,7 +90,7 @@ class View(tk.Tk, Observer):
         '''
         Add a new group to the display.
         '''
-        group_key = deepcopy(self.group_key)
+        group_key = self.group_key
         self.groups[group_key] = []
         group = self.groups[group_key]
 
@@ -148,34 +147,69 @@ class View(tk.Tk, Observer):
         if update_event == "start calculate":
             pass
 
-        if update_event == "end calculte":
+        elif update_event == "end calculte":
             self.popup(("The probability of this configuration is: " + str(format_float(self.model.get_result(), factor=100)) + "%"))
         
-        if update_event == "invalid deck size":
+        elif update_event == "invalid deck size":
             self.ent_deck_size.delete(0, "end")
             self.ent_deck_size.insert(0, self.model.get_deck_size())
 
-        if update_event == "invalid sample size":
+        elif update_event == "invalid sample size":
             self.ent_sample_size.delete(0, "end")
             self.ent_sample_size.insert(0, self.model.get_sample_size())
 
-        if update_event == "invalid group":
+        elif update_event == "invalid group":
             pass
 
-        if update_event == "invalid group size":
+        elif update_event == "invalid group size":
             group_key = kwargs["group_key"]
             self.groups[group_key][2].delete(0, "end")
             self.groups[group_key][2].insert(0, self.model.get_group_size(group_key))
 
-        if update_event == "invalid group min":
+        elif update_event == "invalid group min":
             group_key = kwargs["group_key"]
-            self.groups[group_key][3].delete(0, "end")
-            self.groups[group_key][3].insert(0, self.model.get_group_min(group_key))
+            invalid_value = int(self.groups[group_key][3].get())
+            group_size = self.model.get_group_size(group_key)
+            group_max = self.model.get_group_max(group_key)
 
-        if update_event == "invalid group max":
+            if invalid_value >= group_max and invalid_value <= group_size:
+                self.groups[group_key][4].delete(0, "end")
+                self.groups[group_key][4].insert(0, invalid_value)
+                self.controller.on_group_max(group_key, invalid_value)
+                self.controller.on_group_min(group_key, invalid_value)
+
+            elif invalid_value >= group_max and invalid_value >= group_size:
+                self.groups[group_key][4].delete(0, "end")
+                self.groups[group_key][4].insert(0, group_size)
+                self.controller.on_group_max(group_key, group_size)
+
+                self.groups[group_key][3].delete(0, "end")
+                self.groups[group_key][3].insert(0, group_size)
+                self.controller.on_group_min(group_key, group_size)
+            
+            else:
+                self.groups[group_key][3].delete(0, "end")
+                self.groups[group_key][3].insert(0, self.model.get_group_min(group_key))
+
+        elif update_event == "invalid group max":
             group_key = kwargs["group_key"]
-            self.groups[group_key][4].delete(0, "end")
-            self.groups[group_key][4].insert(0, self.model.get_group_max(group_key))
+            invalid_value = int(self.groups[group_key][4].get())
+            group_size = self.model.get_group_size(group_key)
+            group_min = self.model.get_group_min(group_key)
+
+            if invalid_value <= group_min:
+                self.groups[group_key][4].delete(0, "end")
+                self.groups[group_key][4].insert(0, group_min)
+                self.controller.on_group_max(group_key, group_min)
+
+            elif invalid_value >= group_size:
+                self.groups[group_key][4].delete(0, "end")
+                self.groups[group_key][4].insert(0, group_size)
+                self.controller.on_group_max(group_key, group_size)
+
+            else:
+                self.groups[group_key][4].delete(0, "end")
+                self.groups[group_key][4].insert(0, self.model.get_group_max(group_key))       
 
     def popup(self, text):
         popup = tk.Toplevel()                                        # Create a popup window.
@@ -191,3 +225,4 @@ class View(tk.Tk, Observer):
         lbl_popup.pack(padx=5, pady=20)
 
         popup.mainloop()
+        
