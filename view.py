@@ -159,12 +159,31 @@ class View(tk.Tk, Observer):
             self.popup(("The probability of this configuration is: " + str(format_float(self.model.get_result(), factor=100)) + "%"))
         
         elif update_event == "invalid deck size":
-            self.ent_deck_size.delete(0, "end")
-            self.ent_deck_size.insert(0, self.model.get_deck_size())
+            invalid_deck_size = int(self.ent_deck_size.get())
+            sample_size = self.model.get_sample_size()
+
+            if invalid_deck_size <= sample_size:
+                self.ent_sample_size.delete(0, "end")
+                self.ent_sample_size.insert(0, invalid_deck_size)
+                self.controller.on_sample_size(invalid_deck_size)
+                self.controller.on_deck_size(invalid_deck_size)
+
+            else:
+                self.ent_deck_size.delete(0, "end")
+                self.ent_deck_size.insert(0, self.model.get_deck_size())
 
         elif update_event == "invalid sample size":
-            self.ent_sample_size.delete(0, "end")
-            self.ent_sample_size.insert(0, self.model.get_sample_size())
+            invalid_sample_size = int(self.ent_sample_size.get())
+            deck_size = self.model.get_deck_size()
+
+            if invalid_sample_size >= deck_size:
+                self.ent_sample_size.delete(0, "end")
+                self.ent_sample_size.insert(0, deck_size)
+                self.controller.on_sample_size(deck_size)
+
+            else:
+                self.ent_sample_size.delete(0, "end")
+                self.ent_sample_size.insert(0, self.model.get_sample_size())
 
         elif update_event == "invalid group":
             pass

@@ -28,7 +28,7 @@ class Model_Hypgeo(Subject):
         '''
         Sets self.deck_size to integer, updates self.unassigned_cards.
         '''
-        if check_positive_int(integer):
+        if check_positive_int(integer) and integer >= self.sample_size:
             self.deck_size = integer
             self.update_unassigned_cards()
         else:
