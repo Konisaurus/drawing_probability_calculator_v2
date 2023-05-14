@@ -19,13 +19,13 @@ class Controller:
 
     def on_deck_size(self, value):
         if value == "":
-            pass
+            self.model.set_deck_size(0)
         else:
             self.model.set_deck_size(int(value))
 
     def on_sample_size(self, value):
         if value == "":
-            pass
+            self.model.set_deck_size(0)
         else:
             self.model.set_sample_size(int(value))
 
