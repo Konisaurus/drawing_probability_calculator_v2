@@ -52,7 +52,7 @@ class Controller:
         Changes a groups size.
         '''
         if value == "":
-            pass
+            self.model.set_defined_group_size(key, 0)
         else:
             self.model.set_defined_group_size(key, int(value))
 
@@ -61,7 +61,7 @@ class Controller:
         Changes a groups min in sample.
         '''
         if value == "":
-            pass
+            self.model.set_defined_group_size(key, 0)
         else:
             self.model.set_defined_group_min(key, int(value))
 
@@ -70,6 +70,6 @@ class Controller:
         Changes a groups max in sample.
         '''
         if value == "":
-            pass
+            self.model.set_defined_group_size(key, 0)
         else:
             self.model.set_defined_group_max(key, int(value))

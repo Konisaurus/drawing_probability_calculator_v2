@@ -2,25 +2,35 @@
 Contains some basic methods for the model.
 
 Included are:
-- faculty()
-- biomial_coefficient()
-- format_float()
+- check_positiv_int(value)
+- faculty(n)
+- biomial_coefficient(n, k)
+- format_float(value, decimals, factor)
+- convert_dict_to_list(dictionary)
 '''
 
 # Methods.
+def check_positive_int(value):
+    '''
+    Returns True if a value is an integer and positive, else returns False.
+    '''
+    if type(value) == int and value >= 0:
+        return True
+    else:
+        return False
+
 def faculty(n):
     '''
     Calculates the faculty n! and returns it.
     '''
-    if n < 0 or type(n) != int:
+    if check_positive_int(n):
+        n_fak = 1                   # The smallest possible result of faculty is 1.
+        if n != 0:                  # 0! is defined as 1.
+            for i in range(2,n+1):  # Increase i by one and multiply it with the result before, until i reaches n.
+                n_fak *= i    
+        return n_fak                # return result = n!
+    else:
         raise TypeError("not a positive integer.")
-    
-    n_fak = 1                   # The smallest possible result of faculty is 1.
-    if n != 0:                  # 0! is defined as 1.
-        for i in range(2,n+1):  # Increase i by one and multiply it with the result before, until i reaches n.
-            n_fak *= i
-            
-    return n_fak                # return result = n!
 
 def binomial_coefficient(n, k):
     '''
@@ -38,7 +48,7 @@ def binomial_coefficient(n, k):
     the complete faculties. The following code is a more effiecient implementation
     of the binomial coefficient.
     '''
-    if 0 <= k <= n:                             
+    if check_positive_int(k) and check_positive_int(n) and k <= n:
         dividend = 1
         divisor = 1
         for i in range(1, min(n - k, k) + 1):
@@ -46,18 +56,26 @@ def binomial_coefficient(n, k):
             divisor *= i
             n -= 1
         return int(dividend / divisor)
-    
     else:
         raise ("only positive integers which fulfil n >= k >= 0.")
 
-def check_positive_int(value):
+def format_float(value, decimals=3, factor=1):
     '''
-    Returns True if a value is an integer and positive, else returns False.
+    Formats a float and returns it as a float
+    Percentage: True = multiply the float by 100, False = do nothing.
+    Decimals: Number of decimals after the coma.
+    Value: Flota you want to format.
     '''
-    if type(value) == int and value >= 0:
-        return True
+    if type(value) == float and check_positive_int(decimals) and type(factor) == int:
+        if (value * factor) >= (10 ** (-decimals)):
+            return float("{:.{}f}".format(value * factor, decimals))    # Display numbers that are not rounded to 0 as a regular float.
+        else:
+            return float("{:.{}e}".format(value * factor, decimals))    # Display very small numbers that would be rounded to 0 in the exponential form.
     else:
-        return False
+        raise ("Values do not fulfil requirements: \n\
+               type(value) == int \n\
+               type(decimals) == int and decimals >= 0 \n\
+               type(factor) == int")
     
 def convert_dict_to_list(dictionary):
     '''
@@ -70,18 +88,3 @@ def convert_dict_to_list(dictionary):
         return new_list
     except:
         raise (TypeError, "convert_dict_to_list needs a dict as an argument.")
-
-def format_float(value, decimals=3, factor=1):
-    '''
-    Formats a float and returns it as a float
-    Percentage: True = multiply the float by 100, False = do nothing.
-    Decimals: Number of decimals after the coma.
-    Value: Flota you want to format.
-    '''
-    if type(value) == float and check_positive_int(decimals) and type(factor) == int:
-        return float("%.{}f".format(decimals) % (value * factor))
-    else:
-        raise ("Values do not fulfil requirements: \n\
-               type(value) == int \n\
-               type(decimals) == int and decimals >= 0 \n\
-               type(factor) == int")

@@ -5,7 +5,9 @@ Enter values in a GUI and calculate probabilities with the hypergeometric cumula
 
 ## Installation
 
-Use GIT bash [GIT](https://git-scm.com/downloads) to clone th is repository.
+Install [python](https://www.python.org/) to run this repository.
+
+Use GIT bash [GIT](https://git-scm.com/downloads) to clone this repository.
 
 ```bash
 git clone https://github.com/Konisaurus/drawing_probability_calculator.git

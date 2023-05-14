@@ -1,9 +1,14 @@
+'''
+This module contains the View class which contains all the visual aspects of the system.
+'''
+
+# Imports
 import tkinter as tk
 from widgets_for_gui import *
 from observer_subject import Observer
 from model_hypgeo import *
 
-
+# Classes
 class View(tk.Tk, Observer):
     '''
     Class that manages all visual aspects of the program.
@@ -17,7 +22,7 @@ class View(tk.Tk, Observer):
 
         # Count/Storing variables.
         self.groups = {}
-        self.group_key = 0
+        self.key = 0
 
         # Setup a window.
         tk.Tk.__init__(self)
@@ -46,7 +51,7 @@ class View(tk.Tk, Observer):
         tk.Grid.rowconfigure(self=self, index=1, weight=1)
 
         self.main_frm_top.grid(row=0, column=0, padx=10, pady=5, sticky="nesw")
-        self.main_frm_bottom.get_frm_wrapper().grid(row=1, column=0, padx=10, pady=5, sticky="nesw")
+        self.main_frm_bottom.grid(row=1, column=0, padx=10, pady=5, sticky="nesw")
         
         # Top labels, buttons, entries: Create, configure/bind and arrange with grid.
         self.lbl_deck_size = tk.Label(master=self.main_frm_top, text="Deck Size:", font=("Helvetica", self.text_size, "bold"), anchor="e")
@@ -90,31 +95,31 @@ class View(tk.Tk, Observer):
         '''
         Add a new group to the display.
         '''
-        group_key = self.group_key
-        self.groups[group_key] = []
-        group = self.groups[group_key]
+        key = self.key
+        self.groups[key] = []
+        group = self.groups[key]
 
         group.append(tk.Frame(master=self.main_frm_bottom.get_frm_container()))   # Frame for one grouo
         group.append(tk.Entry(master=group[0], font=("Helvetica", self.text_size), width=(2 * self.entry_width), validate="key"))
         group.append(tk.Entry(master=group[0], font=("Helvetica", self.text_size), width=(self.entry_width), validate="key"))
         group.append(tk.Entry(master=group[0], font=("Helvetica", self.text_size), width=(self.entry_width), validate="key"))
         group.append(tk.Entry(master=group[0], font=("Helvetica", self.text_size), width=(self.entry_width), validate="key"))
-        group.append(tk.Button(master=group[0], text=" x ", font=("Helvetica", self.text_size, "bold"), anchor="center", command=lambda key=group_key: [self.del_group_view(key), self.controller.on_del_group(key)]))
+        group.append(tk.Button(master=group[0], text=" x ", font=("Helvetica", self.text_size, "bold"), anchor="center", command=lambda key=key: [self.del_group_view(key), self.controller.on_del_group(key)]))
 
         for index, command in zip([2,3,4], [self.controller.on_group_size, self.controller.on_group_min, self.controller.on_group_max]):
             entry = group[index]
             entry.configure(validatecommand=(entry.register(self.validate),'%d', '%P'))                              # Only allow integers as inputs for all entries.
-            entry.bind('<FocusOut>', lambda event, key=group_key, command=command, entry=entry: command(key, entry.get()))    # Bind controller method to every entry.
+            entry.bind('<FocusOut>', lambda event, key=key, command=command, entry=entry: command(key, entry.get()))    # Bind controller method to every entry.
 
-        group[0].grid(row=(group_key + 1), column=0, columnspan=5)             # Arrange the group frame.
+        group[0].grid(row=(key + 1), column=0, columnspan=5)             # Arrange the group frame.
         group[1].grid(row=0, column=0, padx=5, pady=5, sticky="ns")
         for column in range(2, 6, 1):
             group[column].grid(row=0, column=column, padx=30, pady=5, sticky="ns")  # Arrange the group widgets.
 
         self.btn_add_group.grid_forget()                                            # Arrange the button at the bottom of all groups
-        self.btn_add_group.grid(row=(group_key + 2), column=0, columnspan=5, padx=5, pady=5, sticky="nesw")
+        self.btn_add_group.grid(row=(key + 2), column=0, columnspan=5, padx=5, pady=5, sticky="nesw")
 
-        self.group_key += 1
+        self.key += 1
 
     def del_group_view(self, key):
         '''
@@ -144,6 +149,9 @@ class View(tk.Tk, Observer):
         self.winfo_containing(x, y).focus()
 
     def update(self, update_event, **kwargs):
+        '''
+        Update the GUI.
+        '''
         if update_event == "start calculate":
             pass
 
@@ -162,56 +170,86 @@ class View(tk.Tk, Observer):
             pass
 
         elif update_event == "invalid group size":
-            group_key = kwargs["group_key"]
-            self.groups[group_key][2].delete(0, "end")
-            self.groups[group_key][2].insert(0, self.model.get_group_size(group_key))
+            key = kwargs["group_key"]
+            invalid_size = int(self.groups[key][2].get())
+            group_min = self.model.get_group_min(key)
+            group_max = self.model.get_group_max(key)
+            unassigned_cards = self.model.get_unassigned_cards()
+            if invalid_size >= (unassigned_cards + self.model.get_group_size(key)):
+                self.groups[key][2].delete(0, "end")
+                self.groups[key][2].insert(0, unassigned_cards + self.model.get_group_size(key))
+                self.controller.on_group_size(key, unassigned_cards + self.model.get_group_size(key))
+
+            elif invalid_size <= group_max and invalid_size >= group_min:
+                self.groups[key][4].delete(0, "end")
+                self.groups[key][4].insert(0, invalid_size)
+                self.controller.on_group_max(key, invalid_size)
+                self.controller.on_group_size(key, invalid_size)
+
+            elif invalid_size <= group_min:
+                self.groups[key][3].delete(0, "end")
+                self.groups[key][3].insert(0, invalid_size)
+                self.groups[key][4].delete(0, "end")
+                self.groups[key][4].insert(0, invalid_size)
+                self.controller.on_group_min(key, invalid_size)
+                self.controller.on_group_max(key, invalid_size)
+                self.controller.on_group_size(key, invalid_size)
+
+            else:
+                self.groups[key][2].delete(0, "end")
+                self.groups[key][2].insert(0, self.model.get_group_min(key))
 
         elif update_event == "invalid group min":
-            group_key = kwargs["group_key"]
-            invalid_value = int(self.groups[group_key][3].get())
-            group_size = self.model.get_group_size(group_key)
-            group_max = self.model.get_group_max(group_key)
+            key = kwargs["group_key"]
+            invalid_min = int(self.groups[key][3].get())
+            group_size = self.model.get_group_size(key)
+            group_max = self.model.get_group_max(key)
 
-            if invalid_value >= group_max and invalid_value <= group_size:
-                self.groups[group_key][4].delete(0, "end")
-                self.groups[group_key][4].insert(0, invalid_value)
-                self.controller.on_group_max(group_key, invalid_value)
-                self.controller.on_group_min(group_key, invalid_value)
+            if invalid_min >= group_max and invalid_min <= group_size:
+                self.groups[key][4].delete(0, "end")
+                self.groups[key][4].insert(0, invalid_min)
+                self.controller.on_group_max(key, invalid_min)
+                self.controller.on_group_min(key, invalid_min)
 
-            elif invalid_value >= group_max and invalid_value >= group_size:
-                self.groups[group_key][4].delete(0, "end")
-                self.groups[group_key][4].insert(0, group_size)
-                self.controller.on_group_max(group_key, group_size)
-
-                self.groups[group_key][3].delete(0, "end")
-                self.groups[group_key][3].insert(0, group_size)
-                self.controller.on_group_min(group_key, group_size)
+            elif invalid_min >= group_max and invalid_min >= group_size:
+                self.groups[key][4].delete(0, "end")
+                self.groups[key][4].insert(0, group_size)
+                self.groups[key][3].delete(0, "end")
+                self.groups[key][3].insert(0, group_size)
+                self.controller.on_group_max(key, group_size)
+                self.controller.on_group_min(key, group_size)
             
             else:
-                self.groups[group_key][3].delete(0, "end")
-                self.groups[group_key][3].insert(0, self.model.get_group_min(group_key))
+                self.groups[key][3].delete(0, "end")
+                self.groups[key][3].insert(0, self.model.get_group_min(key))
 
         elif update_event == "invalid group max":
-            group_key = kwargs["group_key"]
-            invalid_value = int(self.groups[group_key][4].get())
-            group_size = self.model.get_group_size(group_key)
-            group_min = self.model.get_group_min(group_key)
+            key = kwargs["group_key"]
+            invalid_max = int(self.groups[key][4].get())
+            group_size = self.model.get_group_size(key)
+            group_min = self.model.get_group_min(key)
 
-            if invalid_value <= group_min:
-                self.groups[group_key][4].delete(0, "end")
-                self.groups[group_key][4].insert(0, group_min)
-                self.controller.on_group_max(group_key, group_min)
+            if invalid_max <= group_min:
+                self.groups[key][4].delete(0, "end")
+                self.groups[key][4].insert(0, group_min)
+                self.controller.on_group_max(key, group_min)
 
-            elif invalid_value >= group_size:
-                self.groups[group_key][4].delete(0, "end")
-                self.groups[group_key][4].insert(0, group_size)
-                self.controller.on_group_max(group_key, group_size)
+            elif invalid_max >= group_size:
+                self.groups[key][4].delete(0, "end")
+                self.groups[key][4].insert(0, group_size)
+                self.controller.on_group_max(key, group_size)
 
             else:
-                self.groups[group_key][4].delete(0, "end")
-                self.groups[group_key][4].insert(0, self.model.get_group_max(group_key))       
+                self.groups[key][4].delete(0, "end")
+                self.groups[key][4].insert(0, self.model.get_group_max(key))   
+
+        elif update_event == "key error":
+            pass    
 
     def popup(self, text):
+        '''
+        Generates a popup in the middle of the application with "text".
+        '''
         popup = tk.Toplevel()                                        # Create a popup window.
         popup.geometry("390x70")                                     # Set size.
         popup.resizable(False, False)                                # Lock size.

@@ -1,22 +1,26 @@
+'''
+tkinter widget: Frame with a scrollbar.
+'''
+
 # Imports
 import tkinter as tk
 
 # Classes
-class Scrollable_Frame():
+class Scrollable_Frame(tk.Frame):
     '''
     Frame with a scrollbar for the y-axis.
     Access the container with self.get_frm_container().
     '''
-    def __init__(self, master, relief=tk.RIDGE, borderwidth=0):
-        # Create a frame that wraps everything up.
-        self.frm_wrapper = tk.Frame(master=master, relief=relief, borderwidth=borderwidth)
+    def __init__(self, master, **kwargs):
+        # The wrapper frame inherited tk.Frame. It contains the scrollbar an the container frame.
+        super().__init__(master, **kwargs)
 
         # Create a canvas which will be scrollable.
-        self.cnv_scrollbar = tk.Canvas(master=self.frm_wrapper)
+        self.cnv_scrollbar = tk.Canvas(master=self)
         self.cnv_scrollbar.pack(side="left", fill="both",expand=1)
 
         # Add a scrollbar to the canvas.
-        self.scb_yaxis = tk.Scrollbar(master=self.frm_wrapper, orient="vertical", command=self.cnv_scrollbar.yview)
+        self.scb_yaxis = tk.Scrollbar(master=self, orient="vertical", command=self.cnv_scrollbar.yview)
         self.scb_yaxis.pack(side="right",fill="y")
 
         # Configure the canvas.
@@ -31,12 +35,6 @@ class Scrollable_Frame():
         self.frm_container.bind("<Enter>", self.bind_mousewheel)
         self.frm_container.bind("<Leave>", self.unbind_mousewheel)
         self.frm_container.bind("<Configure>", self.adjust_scrollregion)
-
-    def get_frm_wrapper(self):
-        '''
-        Access the wrapper frame, for placing it, etc.
-        '''
-        return self.frm_wrapper
 
     def get_frm_container(self):
         '''

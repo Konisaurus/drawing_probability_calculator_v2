@@ -58,32 +58,44 @@ class Model_Hypgeo(Subject):
             self.notify("invalid_pool")
         
     def set_defined_group_size(self, key, card_count):
+        '''
+        Set the size of the group corresponding to key.
+        self.unassigned_cards >= card_count >= max_in_sample >= min_in_sample
+        '''
         try:
-            if check_positive_int(card_count) and card_count <= self.unassigned_cards and card_count >= (self.defined_groups[key][1] and self.defined_groups[key][2]):
+            if check_positive_int(card_count) and card_count <= (self.unassigned_cards + self.defined_groups[key][0]) and card_count >= (self.defined_groups[key][1] and self.defined_groups[key][2]):
                 self.defined_groups[key][0] = card_count
                 self.update_unassigned_cards()
             else:
                 self.notify("invalid group size", group_key=key)
         except:
-            pass
+            self.notify("index error")
 
     def set_defined_group_min(self, key, min_in_sample):
+        '''
+        Set the min of the group corresponding to key.
+        self.unassigned_cards >= card_count >= max_in_sample >= min_in_sample
+        '''
         try:
             if check_positive_int(min_in_sample) and min_in_sample <= self.defined_groups[key][2]:
                 self.defined_groups[key][1] = min_in_sample
             else:
                 self.notify("invalid group min", group_key=key)
         except:
-            pass
+            self.notify("key error")
 
     def set_defined_group_max(self, key, max_in_sample):
+        '''
+        Set the max of the group corresponding to key.
+        self.unassigned_cards >= card_count >= max_in_sample >= min_in_sample
+        '''
         try:
             if check_positive_int(max_in_sample) and max_in_sample >= self.defined_groups[key][1] and max_in_sample <= self.defined_groups[key][0]:
                 self.defined_groups[key][2] = max_in_sample
             else:
                 self.notify("invalid group max", group_key=key)
         except:
-            pass
+            self.notify("key error")
             
     def del_defined_group(self, key):
         '''
@@ -93,7 +105,7 @@ class Model_Hypgeo(Subject):
             self.defined_groups.pop(key)
             self.update_unassigned_cards()
         except:
-            pass
+            self.notify("key error")
 
     def update_unassigned_cards(self):
         '''
@@ -120,7 +132,7 @@ class Model_Hypgeo(Subject):
 
     def calculate(self):
         '''
-        Calculate the probability of drawing the configured hand in the deck_manager() and return it.
+        Calculate the probability of drawing the configured hand and return it.
         '''
         self.notify("start calculate")                                              # Notifiy the Observers that the calculation will start, so the last parameters can be set before calculation.
         defined_groups = convert_dict_to_list(self.defined_groups)                  # Convert dict to list (index not needed).
@@ -173,14 +185,3 @@ class Model_Hypgeo(Subject):
 
     def get_result(self):
         return self.result
-
-# Testing this model class.
-if __name__ == "__main__":
-    hypgeo = Model_Hypgeo()
-    hypgeo.set_deck_size(40)
-    hypgeo.set_sample_size(5)
-    hypgeo.add_defined_group(3, 1, 3)
-    hypgeo.add_defined_group(5, 2, 3)
-    hypgeo.add_defined_group(5, 2, 3)
-    hypgeo.del_defined_group(1)
-    hypgeo.calculate()
