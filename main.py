@@ -1,5 +1,5 @@
 '''
-Start a program for calculating the probability of drawing certain cards from a deck.
+Start the program for calculating the probability of drawing certain cards from a deck.
 '''
 
 # Imports.

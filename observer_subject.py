@@ -37,8 +37,8 @@ class Subject():
     def notify(self, event_code, **kwargs):
         '''
         Notifiy all Observers about a change.
-        event_code further specifies what exactly changed.
-        *args for arguments that are important in combination with the change.
+        The event_code further specifies what exactly changed.
+        **kwargs for arguments that are important in combination with the change.
         '''
         for observer in self.observers:
             observer.update(event_code, **kwargs)

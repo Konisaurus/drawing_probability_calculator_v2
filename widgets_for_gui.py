@@ -1,5 +1,5 @@
 '''
-tkinter widget: Frame with a scrollbar.
+Tkinter widget: Frame with a scrollbar.
 '''
 
 # Imports
@@ -9,14 +9,14 @@ import tkinter as tk
 class Scrollable_Frame(tk.Frame):
     '''
     Frame with a scrollbar for the y-axis.
-    Access the container with self.get_frm_container().
+    Access the container frame with self.get_frm_container().
     '''
     def __init__(self, master, **kwargs):
         # The wrapper frame inherited tk.Frame. It contains the scrollbar an the container frame.
         super().__init__(master, **kwargs)
 
         # Create a canvas which will be scrollable.
-        self.cnv_scrollbar = tk.Canvas(master=self)
+        self.cnv_scrollbar = tk.Canvas(master=self, highlightthickness=0)
         self.cnv_scrollbar.pack(side="left", fill="both",expand=1)
 
         # Add a scrollbar to the canvas.

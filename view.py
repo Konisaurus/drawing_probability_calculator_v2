@@ -108,7 +108,7 @@ class View(tk.Tk, Observer):
 
         for index, command in zip([2,3,4], [self.controller.on_group_size, self.controller.on_group_min, self.controller.on_group_max]):
             entry = group[index]
-            entry.configure(validatecommand=(entry.register(self.validate),'%d', '%P'))                              # Only allow integers as inputs for all entries.
+            entry.configure(validatecommand=(entry.register(self.validate),'%d', '%P'))                                 # Only allow integers as inputs for all entries.
             entry.bind('<FocusOut>', lambda event, key=key, command=command, entry=entry: command(key, entry.get()))    # Bind controller method to every entry.
 
         group[0].grid(row=(key + 1), column=0, columnspan=5)             # Arrange the group frame.
